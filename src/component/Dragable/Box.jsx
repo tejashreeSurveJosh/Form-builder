@@ -97,7 +97,6 @@ export const Box = function Box({
     );
   }
 
-  console.log("isCanvas", inCanvas);
   return (
     <OverlayTrigger
       placement={inCanvas ? "auto" : "top"}

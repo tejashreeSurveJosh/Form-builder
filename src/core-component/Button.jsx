@@ -1,9 +1,15 @@
 import React from "react";
-import { Button as ButtonComponent } from "reactstrap";
+// import { Alert, Button as ButtonCom } from "react-bootstrap";
+import { Button as CustomButton } from "reactstrap";
 
 const Button = () => {
-  // return <ButtonComponent />;
-  return <button>Click me</button>;
+  return (
+    <div className="d-flex flex-column">
+      <CustomButton onClick={() => alert("This is click from the drop")}>
+        Click me
+      </CustomButton>
+    </div>
+  );
 };
 
 export default Button;

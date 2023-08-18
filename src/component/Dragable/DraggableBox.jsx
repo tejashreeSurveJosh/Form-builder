@@ -127,6 +127,7 @@ export const DraggableBox = ({
         currentLayout,
       },
       collect: (moniter) => {
+        console.log("Moniter", moniter.getItem());
         return {
           isDragging: moniter.isDragging(),
         };
@@ -169,6 +170,8 @@ export const DraggableBox = ({
     left: "10px",
   };
 
+  console.log("Id", id);
+
   return (
     <div
       className="text-center align-items-center clearfix mb-2 col-md-4"
@@ -191,7 +194,6 @@ export const DraggableBox = ({
           onMouseLeave={() => console.log("mouseLeave")}
           style={getStyles(isDragging, isSelectedComponent)}
         >
-          <h1>This is icanvas</h1>
           <Rnd
             style={{ ...style }}
             resizeGrid={[gridWidth, 10]}
@@ -226,7 +228,8 @@ export const DraggableBox = ({
             disableDragging={mode !== "edit" || readOnly}
             onDragStop={(e, direction) => {
               setDragging(false);
-              onDragStop(e, id, direction, currentLayout, layoutData);
+              console.log("Drop has been stoped", direction);
+              // onDragStop(e, id, direction, currentLayout, layoutData);
             }}
             onResizeStop={(e, direction, ref, d, position) => {
               setResizing(false);

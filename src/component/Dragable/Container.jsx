@@ -43,7 +43,8 @@ export const Container = ({
     backgroundSize: `${gridWidth}px 10px`,
   };
 
-  console.log("appDefination,", appDefinition);
+  // console.log("currentPageID", currentPageId);
+  // console.log("appDefination,", appDefinition);
   const components = appDefinition.pages[currentPageId]?.components ?? {};
 
   console.log("components", components);
@@ -117,7 +118,6 @@ export const Container = ({
   //   }, [noOfBoxs]);
 
   const { draggingState } = useDragLayer((monitor) => {
-    console.log("Monitor.item", monitor.getItem());
     if (monitor.isDragging()) {
       if (!monitor.getItem().parent) {
         return { draggingState: true };
@@ -202,7 +202,7 @@ export const Container = ({
       },
     };
 
-    // appDefinitionChanged(newDefinition);
+    appDefinitionChanged(newDefinition);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boxes]);
 
@@ -216,6 +216,7 @@ export const Container = ({
     () => ({
       accept: [ItemTypes.BOX, ItemTypes.COMMENT],
       async drop(item, monitor) {
+        console.log("reached in eleemnet");
         if (item.parent) {
           return;
         }
@@ -285,7 +286,7 @@ export const Container = ({
         return undefined;
       },
       collect: (monitor) => {
-        console.log("monitor", monitor.isOver());
+        console.log("MONITOR", monitor.getItem());
         return {
           isOver: !!monitor.isOver(),
         };
@@ -295,16 +296,15 @@ export const Container = ({
   );
 
   console.log("box", boxes);
-  console.log("isDragging", isDragging);
   return (
     <div
-      // ref={(el) => {
-      //   console.log("EL", el);
-      //   canvasRef.current = el;
-      //   drop(el);
-      // }}
-      ref={drop}
-      style={{ ...styles, height: canvasHeight }}
+      ref={(el) => {
+        console.log("EL", el);
+        canvasRef.current = el;
+        drop(el);
+      }}
+      // ref={drop}
+      style={{ ...styles, height: "100%" }}
       className={cx("real-canvas", {
         "show-grid": isDragging || isResizing,
       })}
@@ -315,10 +315,10 @@ export const Container = ({
     >
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
-        const canShowInCurrentLayout =
-          box.component.definition.others[
-            "currentLayout" === "mobile" ? "showOnMobile" : "showOnDesktop"
-          ].value;
+        // const canShowInCurrentLayout =
+        //   box.component.definition.others[
+        //     "currentLayout" === "mobile" ? "showOnMobile" : "showOnDesktop"
+        //   ].value;
         const addDefaultChildren = box.withDefaultChildren;
         if (
           !box.parent &&
@@ -387,7 +387,7 @@ export const Container = ({
           );
         }
       })}
-      {/* {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
+      {Object.keys(boxes).length === 0 && !appLoading && !isDragging && (
         <div style={{ paddingTop: "10%" }}>
           <div className="mx-auto w-50 p-5 bg-light no-components-box">
             <center className="text-muted">
@@ -404,7 +404,7 @@ export const Container = ({
             </center>
           </div>
         </div>
-      )} */}
+      )}
     </div>
   );
 };

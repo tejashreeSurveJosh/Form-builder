@@ -19,6 +19,7 @@ import { v4 as uuid } from "uuid";
 
 // const { produce } = require("immer");
 
+
 const defaultDefinition = {
   showViewerNavigation: true,
   homePageId: 1,
@@ -41,14 +42,22 @@ const defaultDefinition = {
 };
 
 export const Canvas = () => {
-  const canvasContainerRef = createRef();
+  const defaultPageId = uuid();
+  const canvasContainerRef = useRef();
   const selectionRef = createRef();
   const [isDragging, setIsDragging] = useState(false);
   const [appDefinition, setAppDefinition] = useState(defaultDefinition);
+  const [selectedComponents, setSelectedComponents] = useState([]);
+  const [selectedComponent, setSelectedComponent] = useState({});
+  const [hoveredComponent, setHoveredComponent] = useState(null);
+  const [currentPageID, setCurrentPageID] = useState(1);
 
   // const appDefinition = defaultDefinition;
   // const [appDefinition,set]
 
+  // useEffect(() => {
+  //   canvasContainerRef.current.value;
+  // }, []);
   const getCanvasWidth = () => {
     const canvasBoundingRect = document
       .getElementsByClassName("canvas-area")[0]
@@ -64,14 +73,18 @@ export const Canvas = () => {
     return ref.current;
   };
 
+  useEffect(() => {
+    console.log("CanvasContainerRef", canvasContainerRef);
+  });
+
   const previous = usePrevious(appDefinition);
 
-  useEffect(() => {
-    console.log("previeosu ststate", previous);
-  }, [previous]);
+  // useEffect(() => {
+  //   console.log("previeosu ststate", previous);
+  // }, [previous]);
 
   const appDefinitionChanged = (newDefinition, opts = {}) => {
-    let currentPageId = this.state.currentPageId;
+    let currentPageId = currentPageID;
     if (isEqual(appDefinition, newDefinition)) return;
     // if (config.ENABLE_MULTIPLAYER_EDITING && !opts.skipYmapUpdate) {
     //   this.props.ymap?.set("appDef", {
@@ -84,6 +97,7 @@ export const Canvas = () => {
       currentPageId = newDefinition.homePageId;
 
       setAppDefinition({ ...newDefinition });
+      setCurrentPageID(currentPageId);
       // this.setState(
       //   {
       //     isSaving: true,
@@ -121,6 +135,15 @@ export const Canvas = () => {
     // );
   };
 
+  const handleComponentHover = (id) => {
+    // if (this.state.selectionInProgress) return;
+    setHoveredComponent(id);
+  };
+  const handleComponentClick = (id, component) => {
+    setSelectedComponents({ id, component });
+  };
+
+  console.log("canvasContainerRef", canvasContainerRef);
   return (
     <>
       <div>Canvas</div>
@@ -128,8 +151,6 @@ export const Canvas = () => {
         <EditorContextWrapper>
           <DndProvider backend={HTML5Backend}>
             <div className="sub-section">
-              {/* Need to check for reactselecto */}
-              {/* EnterScreen with Side Bar */}
               <div
                 className={`main main-editor-canvas `}
                 id="main-editor-canvas"
@@ -183,7 +204,7 @@ export const Canvas = () => {
                             mode={"edit"}
                             // zoomLevel={zoomLevel}
                             // deviceWindowWidth={deviceWindowWidth}
-                            // selectedComponents={selectedComponents}
+                            selectedComponents={selectedComponents}
                             // appLoading={isLoading}
                             // onEvent={handleEvent}
                             // onComponentOptionChanged={
@@ -192,15 +213,15 @@ export const Canvas = () => {
                             // onComponentOptionsChanged={
                             //   handleOnComponentOptionsChanged
                             // }
-                            // setSelectedComponent={setSelectedComponent}
+                            setSelectedComponent={setSelectedComponent}
                             // handleUndo={handleUndo}
                             // handleRedo={handleRedo}
                             // removeComponent={removeComponent}
-                            // onComponentClick={handleComponentClick}
-                            // onComponentHover={handleComponentHover}
-                            // hoveredComponent={hoveredComponent}
+                            onComponentClick={handleComponentClick}
+                            onComponentHover={handleComponentHover}
+                            hoveredComponent={hoveredComponent}
                             // sideBarDebugger={sideBarDebugger}
-                            // currentPageId={.state.currentPageId}
+                            currentPageId={currentPageID}
                           />
                           <CustomDraggerLayer
                             snapToGrid={true}
