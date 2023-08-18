@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Button from "../../core-component/Button";
+import { Card } from "../../core-component/Card";
 import { componentTypes } from "../Widgetsmanager/components";
 import { Tooltip } from "react-bootstrap";
 import { useTranslation } from "react-i18next";
 
 const AllComponents = {
   Button,
+  Card,
 };
 export const Box = function Box({
   id,

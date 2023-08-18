@@ -29,7 +29,7 @@ export const ComponentManager = ({ componentTypes }) => {
       items: [],
     };
 
-    const commonItems = ["Button"];
+    const commonItems = ["Button", "Card"];
 
     filteredComponents.forEach((f) => {
       if (commonItems.includes(f.name)) commonSection.items.push(f);
