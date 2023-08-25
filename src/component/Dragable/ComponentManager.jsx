@@ -1,15 +1,18 @@
 import React, { useState } from "react";
 import { DraggableBox } from "./DraggableBox";
 
-export const ComponentManager = ({ componentTypes }) => {
+export const ComponentManager = ({ componentTypes, zoomLevel }) => {
   const [filteredComponents, setFilteredComponents] = useState(componentTypes);
 
   const renderComponentCard = (component, index) => {
     return (
       <>
-        <DraggableBox key={index} index={index} component={component} />
-        {/* <DraggableBox key={index} index={index} component={component} />
-        <DraggableBox key={index} index={index} component={component} /> */}
+        <DraggableBox
+          key={index}
+          index={index}
+          component={component}
+          zoomLevel={zoomLevel}
+        />
       </>
     );
   };
@@ -29,7 +32,7 @@ export const ComponentManager = ({ componentTypes }) => {
       items: [],
     };
 
-    const commonItems = ["Button", "Card"];
+    const commonItems = ["Button", "Card", "Table", "Form"];
 
     filteredComponents.forEach((f) => {
       if (commonItems.includes(f.name)) commonSection.items.push(f);
@@ -48,7 +51,7 @@ export const ComponentManager = ({ componentTypes }) => {
           data-cy="widget-search-box"
         />
       </div>
-      <div className="widgets-list col-sm-12 col-lg-12 row">
+      <div className="widgets-list m-0 col-sm-12 col-lg-12 row">
         {segregateSections()}
       </div>
     </div>

@@ -5,6 +5,7 @@ import React, {
   useState,
   useRef,
 } from "react";
+import { Button, Typography } from "antd";
 import { EditorContextWrapper } from "./EditorContext";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -14,11 +15,12 @@ import { Container } from "./Container";
 import { CustomDraggerLayer } from "./CustomDraggerLayer";
 import { isEqual } from "lodash";
 import { v4 as uuid } from "uuid";
+import { useEditorStore } from "../../_stores/canvasStore";
+import { shallow } from "zustand/shallow";
 // import config from "config";
 // import { produce } from "immer";
 
 // const { produce } = require("immer");
-
 
 const defaultDefinition = {
   showViewerNavigation: true,
@@ -41,16 +43,18 @@ const defaultDefinition = {
   },
 };
 
-export const Canvas = () => {
+const CanvasComponent = () => {
   const defaultPageId = uuid();
-  const canvasContainerRef = useRef();
-  const selectionRef = createRef();
+  const canvasContainerRef = createRef();
+  const downloadRef = createRef();
+  const selectionRef = useRef();
   const [isDragging, setIsDragging] = useState(false);
   const [appDefinition, setAppDefinition] = useState(defaultDefinition);
   const [selectedComponents, setSelectedComponents] = useState([]);
   const [selectedComponent, setSelectedComponent] = useState({});
   const [hoveredComponent, setHoveredComponent] = useState(null);
   const [currentPageID, setCurrentPageID] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState(1.0);
 
   // const appDefinition = defaultDefinition;
   // const [appDefinition,set]
@@ -73,9 +77,9 @@ export const Canvas = () => {
     return ref.current;
   };
 
-  useEffect(() => {
-    console.log("CanvasContainerRef", canvasContainerRef);
-  });
+  // useEffect(() => {
+  //   console.log("CanvasContainerRef", canvasContainerRef);
+  // });
 
   const previous = usePrevious(appDefinition);
 
@@ -143,10 +147,47 @@ export const Canvas = () => {
     setSelectedComponents({ id, component });
   };
 
-  console.log("canvasContainerRef", canvasContainerRef);
+  console.log(
+    "Get the cnavas",
+    document.getElementsByClassName("canvas-container")
+  );
+
+  const exportApp = () => {
+    console.log("App Defination", appDefinition);
+    const appDef = {
+      appId: uuid(),
+      createAt: "2023-08-24T11:42:43.379Z",
+      definition: appDefinition,
+      id: "",
+      name: "v1",
+      updatedAt: "2023-08-24T11:42:43.379Z",
+    };
+    const data = {
+      appV2: {
+        appEnvironments: [],
+        appVersions: [{ ...appDef }],
+        createdAt: "",
+        currentVersionId: "",
+        dataQueries: [],
+        dataSourceOptions: [],
+        dataSources: [],
+        editingVersion: appDef,
+      },
+      formbuilderVersion: "1",
+    };
+
+    const json = JSON.stringify(data, null, 2);
+    console.log("json", json);
+    const blob = new Blob([json], { type: "application/json" });
+    const href = URL.createObjectURL(blob);
+  };
+
   return (
     <>
-      <div>Canvas</div>
+      <div className="d-flex flex-row justify-content-center">
+        <Typography.Title level={4}>Canvas</Typography.Title>
+        <Button onClick={() => exportApp()}>Export App</Button>
+      </div>
       <div className="editor wrapper">
         <EditorContextWrapper>
           <DndProvider backend={HTML5Backend}>
@@ -168,7 +209,6 @@ export const Canvas = () => {
                     background: "#f4f6fa",
                   }}
                   onMouseUp={(e) => {
-                    console.log("on Mouse Up con", e);
                     // if (["real-canvas", "modal"].includes(e.target.className)) {
                     //   this.setState({
                     //     selectedComponents: [],
@@ -178,9 +218,9 @@ export const Canvas = () => {
                     // }
                   }}
                   ref={canvasContainerRef}
-                  onScroll={() => {
-                    selectionRef.current.checkScroll();
-                  }}
+                  // onScroll={() => {
+                  //   selectionRef.current.checkScroll();
+                  // }}
                 >
                   <>
                     <div
@@ -195,15 +235,15 @@ export const Canvas = () => {
                       {true && (
                         <>
                           <Container
-                            canvasWidth={getCanvasWidth}
+                            canvasWidth={1090}
                             // socket={socket}
                             appDefinition={appDefinition}
                             appDefinitionChanged={appDefinitionChanged}
                             snapToGrid={true}
                             // darkMode={this.props.darkMode}
                             mode={"edit"}
-                            // zoomLevel={zoomLevel}
-                            // deviceWindowWidth={deviceWindowWidth}
+                            zoomLevel={zoomLevel}
+                            deviceWindowWidth={100}
                             selectedComponents={selectedComponents}
                             // appLoading={isLoading}
                             // onEvent={handleEvent}
@@ -225,7 +265,7 @@ export const Canvas = () => {
                           />
                           <CustomDraggerLayer
                             snapToGrid={true}
-                            canvasWidth={getCanvasWidth}
+                            canvasWidth={1090}
                             onDragging={(isDragging) =>
                               setIsDragging(isDragging)
                             }
@@ -237,7 +277,10 @@ export const Canvas = () => {
                 </div>
               </div>
               <div className="editor-sidebar">
-                <ComponentManager componentTypes={componentTypes} />
+                <ComponentManager
+                  componentTypes={componentTypes}
+                  zoomLevel={zoomLevel}
+                />
               </div>
             </div>
           </DndProvider>
@@ -246,3 +289,16 @@ export const Canvas = () => {
     </>
   );
 };
+
+const withStore = (Component) => (props) => {
+  const { currentLayout } = useEditorStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
+
+  return <Component {...props} currentLayout={currentLayout} />;
+};
+
+export const Canvas = withStore(CanvasComponent);

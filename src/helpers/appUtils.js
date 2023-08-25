@@ -49,7 +49,6 @@ function resolveCode(
       );
     } catch (err) {
       error = err;
-      console.log("eval_error", err);
     }
   }
 

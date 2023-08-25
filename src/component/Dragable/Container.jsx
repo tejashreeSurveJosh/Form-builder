@@ -8,6 +8,8 @@ import { ItemTypes } from "./ItemTypes";
 import { componentTypes } from "../Widgetsmanager/components";
 import { addNewWidgetToTheEditor } from "../../helpers/appUtils";
 import { DraggableBox } from "./DraggableBox";
+import { useEditorStore } from "../../_stores/canvasStore";
+import { shallow } from "zustand/shallow";
 
 const NO_OF_GRIDS = 43;
 
@@ -36,6 +38,13 @@ export const Container = ({
   sideBarDebugger,
   currentPageId,
 }) => {
+  const { currentLayout } = useEditorStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
+
   const gridWidth = canvasWidth / NO_OF_GRIDS;
   const styles = {
     width: "100%",
@@ -43,11 +52,8 @@ export const Container = ({
     backgroundSize: `${gridWidth}px 10px`,
   };
 
-  // console.log("currentPageID", currentPageId);
-  // console.log("appDefination,", appDefinition);
   const components = appDefinition.pages[currentPageId]?.components ?? {};
 
-  console.log("components", components);
   const [commentsPreviewList, setCommentsPreviewList] = useState([]);
   const [boxes, setBoxes] = useState(components);
   const [isDragging, setIsDragging] = useState(false);
@@ -171,6 +177,7 @@ export const Container = ({
     // addNewThread(data);
   };
 
+  console.log("appDefination", appDefinition);
   const moveBox = useCallback(
     (id, layouts) => {
       setBoxes(
@@ -216,12 +223,10 @@ export const Container = ({
     () => ({
       accept: [ItemTypes.BOX, ItemTypes.COMMENT],
       async drop(item, monitor) {
-        console.log("reached in eleemnet");
         if (item.parent) {
           return;
         }
 
-        console.log("INTHE USEDROP,", item);
         if (item.name === "comment") {
           const canvasBoundingRect = document
             .getElementsByClassName("real-canvas")[0]
@@ -255,8 +260,6 @@ export const Container = ({
         const componentMeta = componentTypes.find(
           (component) => component.component === item.component.component
         );
-        console.log("adding new component");
-
         const newComponent = addNewWidgetToTheEditor(
           componentMeta,
           monitor,
@@ -266,8 +269,6 @@ export const Container = ({
           snapToGrid,
           zoomLevel
         );
-
-        console.log("newCompoennet", newComponent);
         const newBoxes = {
           ...boxes,
           [newComponent.id]: {
@@ -286,7 +287,6 @@ export const Container = ({
         return undefined;
       },
       collect: (monitor) => {
-        console.log("MONITOR", monitor.getItem());
         return {
           isOver: !!monitor.isOver(),
         };
@@ -295,11 +295,9 @@ export const Container = ({
     [moveBox]
   );
 
-  console.log("box", boxes);
   return (
     <div
       ref={(el) => {
-        console.log("EL", el);
         canvasRef.current = el;
         drop(el);
       }}
@@ -311,7 +309,7 @@ export const Container = ({
       // className="real-canvas show-grid"
       id="real-canvas"
       data-cy="real-canvas"
-      canvas-height={canvasHeight}
+      // canvas-height={canvasHeight}
     >
       {Object.keys(boxes).map((key) => {
         const box = boxes[key];
@@ -327,14 +325,14 @@ export const Container = ({
         ) {
           return (
             <DraggableBox
-              canvasWidth={canvasWidth}
+              canvasWidth={1090}
               onEvent={onEvent}
               onComponentOptionChanged={onComponentOptionChanged}
               onComponentOptionsChanged={onComponentOptionsChanged}
               key={key}
-              //   onResizeStop={onResizeStop}
-              //   onDragStop={onDragStop}
-              //   paramUpdated={paramUpdated}
+              onResizeStop={() => console.log("Resize Func")}
+              onDragStop={() => console.log("onDragStop")}
+              paramUpdated={() => console.log("paramUpdated")}
               id={key}
               {...boxes[key]}
               mode={mode}
@@ -364,7 +362,7 @@ export const Container = ({
                 onComponentClick,
                 onEvent,
                 appDefinition,
-                // appDefinitionChanged,
+                appDefinitionChanged,
                 // currentState,
                 onComponentOptionChanged,
                 onComponentOptionsChanged,
@@ -372,7 +370,7 @@ export const Container = ({
                 zoomLevel,
                 setSelectedComponent,
                 removeComponent,
-                // currentLayout,
+                currentLayout,
                 deviceWindowWidth,
                 selectedComponents,
                 darkMode,

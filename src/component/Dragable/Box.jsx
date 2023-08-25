@@ -2,13 +2,17 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Button from "../../core-component/Button";
 import { Card } from "../../core-component/Card";
+import { CustomForm as Form } from "../../core-component/Form";
 import { componentTypes } from "../Widgetsmanager/components";
 import { Tooltip } from "react-bootstrap";
+import { Table } from "../../core-component/Table";
 import { useTranslation } from "react-i18next";
 
 const AllComponents = {
   Button,
   Card,
+  Table,
+  Form,
 };
 export const Box = function Box({
   id,
@@ -104,17 +108,12 @@ export const Box = function Box({
       placement={inCanvas ? "auto" : "top"}
       delay={{ show: 500, hide: 0 }}
       trigger={inCanvas && true ? null : ["hover", "focus"]}
-      overlay={(props) =>
-        renderTooltip({
+      overlay={(props) => {
+        return renderTooltip({
           props,
-          text:
-            inCanvas &&
-            `${t(
-              `widget.${component.name}.description`,
-              component.description
-            )}`,
-        })
-      }
+          text: inCanvas ? `inCanvas` : `${component.description}`,
+        });
+      }}
     >
       <div style={{ ...styles }} role={preview ? "BoxPreview" : "Box"}>
         {inCanvas ? (

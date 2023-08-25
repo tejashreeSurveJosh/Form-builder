@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 import { useDragLayer } from "react-dnd";
 import { ItemTypes } from "./ItemTypes";
 import { BoxDragPreview } from "./BoxDragPreview";
+import { shallow } from "zustand/shallow";
+import { useEditorStore } from "../../_stores/canvasStore";
 
 const layerStyles = {
   position: "fixed",
@@ -94,22 +96,24 @@ export const CustomDraggerLayer = ({ canvasWidth, onDragging }) => {
     currentOffset,
     delta,
     initialClientOffset,
-  } = useDragLayer((monitor) => ({
-    item: monitor.getItem(),
-    itemType: monitor.getItemType(),
-    initialOffset: monitor.getInitialSourceClientOffset(),
-    initialClientOffset: monitor.getInitialClientOffset(),
-    currentOffset: monitor.getSourceClientOffset(),
-    isDragging: monitor.isDragging(),
-    delta: monitor.getDifferenceFromInitialOffset(),
-  }));
+  } = useDragLayer((monitor) => {
+    return {
+      item: monitor.getItem(),
+      itemType: monitor.getItemType(),
+      initialOffset: monitor.getInitialSourceClientOffset(),
+      initialClientOffset: monitor.getInitialClientOffset(),
+      currentOffset: monitor.getSourceClientOffset(),
+      isDragging: monitor.isDragging(),
+      delta: monitor.getDifferenceFromInitialOffset(),
+    };
+  });
 
-  //   const { currentLayout } = useEditorStore(
-  //     (state) => ({
-  //       currentLayout: state?.currentLayout,
-  //     }),
-  //     shallow
-  //   );
+  const { currentLayout } = useEditorStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
 
   useEffect(() => {
     onDragging(isDragging);
@@ -137,7 +141,7 @@ export const CustomDraggerLayer = ({ canvasWidth, onDragging }) => {
           item,
           initialOffset,
           currentOffset,
-          //   currentLayout,
+          currentLayout,
           initialClientOffset,
           canvasWidth
         )}

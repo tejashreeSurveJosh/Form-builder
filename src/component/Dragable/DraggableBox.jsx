@@ -5,6 +5,19 @@ import { getEmptyImage } from "react-dnd-html5-backend";
 import { ItemTypes } from "./ItemTypes";
 import { Box } from "./Box";
 import cx from "classnames";
+import { useEditorStore } from "../../_stores/canvasStore";
+import { shallow } from "zustand/shallow";
+
+const getStyles = (isDragging, isSelectedComponent) => {
+  console.log("isDragging", isDragging, isSelectedComponent);
+  return {
+    position: "absolute",
+    zIndex: isSelectedComponent ? 2 : 1,
+    // IE fallback: hide the real node using CSS when dragging
+    // because IE will ignore our custom "empty image" drag preview.
+    opacity: isDragging ? 0 : 1,
+  };
+};
 
 export const DraggableBox = ({
   index,
@@ -14,7 +27,6 @@ export const DraggableBox = ({
   parent,
   layouts,
   canvasWidth,
-  currentLayout,
   inCanvas,
   className,
   isSelectedComponent,
@@ -27,12 +39,21 @@ export const DraggableBox = ({
   onComponentClick,
   allComponents,
   onResizeStop,
+  zoomLevel,
+  childComponents = null,
+  parentId,
 }) => {
   const [isResizing, setResizing] = useState(false);
   const [isDragging2, setDragging] = useState(false);
   const [canDrag, setCanDrag] = useState(true);
   const [mouseOver, setMouseOver] = useState(false);
 
+  const { currentLayout } = useEditorStore(
+    (state) => ({
+      currentLayout: state?.currentLayout,
+    }),
+    shallow
+  );
   useEffect(() => {
     setMouseOver(hoveredComponent === id);
   }, [hoveredComponent]);
@@ -46,7 +67,14 @@ export const DraggableBox = ({
     if (isDragging2 && !isSelectedComponent) {
       setSelectedComponent(id, component);
     }
-  }, [isDragging2]);
+  }, [
+    isDragging2,
+    draggingStatusChanged,
+    isSelectedComponent,
+    id,
+    component,
+    setSelectedComponent,
+  ]);
 
   const defaultData = {
     top: 100,
@@ -103,18 +131,8 @@ export const DraggableBox = ({
     },
   };
 
-  const getStyles = (isDragging, isSelectedComponent) => {
-    return {
-      position: "absolute",
-      zIndex: isSelectedComponent ? 2 : 1,
-      // IE fallback: hide the real node using CSS when dragging
-      // because IE will ignore our custom "empty image" drag preview.
-      opacity: isDragging ? 0 : 1,
-    };
-  };
   // useDrag hook from rnd
   const [{ isDragging }, drag, preview] = useDrag(() => {
-    // console.log("USER", component);
     return {
       type: ItemTypes.BOX,
       item: {
@@ -125,9 +143,9 @@ export const DraggableBox = ({
         layouts,
         canvasWidth,
         currentLayout,
+        zoomLevel,
       },
       collect: (moniter) => {
-        console.log("Moniter", moniter.getItem());
         return {
           isDragging: moniter.isDragging(),
         };
@@ -142,6 +160,7 @@ export const DraggableBox = ({
     layouts,
     canvasWidth,
     currentLayout,
+    zoomLevel,
   ]);
 
   let _refProps = {};
@@ -154,7 +173,7 @@ export const DraggableBox = ({
 
   useEffect(() => {
     preview(getEmptyImage(), { captureDraggingState: true });
-  }, [isDragging]);
+  }, [isDragging, preview]);
 
   const changeCanDrag = (newState) => {
     setCanDrag(newState);
@@ -170,11 +189,16 @@ export const DraggableBox = ({
     left: "10px",
   };
 
-  console.log("Id", id);
-
+  function computeWidth(currentLayoutOptions) {
+    return `${currentLayoutOptions?.width}%`;
+  }
   return (
     <div
-      className="text-center align-items-center clearfix mb-2 col-md-4"
+      className={
+        inCanvas
+          ? ""
+          : "text-center align-items-center clearfix mb-2 col-md-4 d-flex"
+      }
       // className={
       //   inCanvas
       //     ? ""
@@ -183,6 +207,7 @@ export const DraggableBox = ({
       //         "d-none": component.component === "KanbanBoard",
       //       })
       // }
+      style={!inCanvas ? {} : { width: computeWidth() }}
     >
       {inCanvas ? (
         <div
@@ -228,7 +253,6 @@ export const DraggableBox = ({
             disableDragging={mode !== "edit" || readOnly}
             onDragStop={(e, direction) => {
               setDragging(false);
-              console.log("Drop has been stoped", direction);
               // onDragStop(e, id, direction, currentLayout, layoutData);
             }}
             onResizeStop={(e, direction, ref, d, position) => {
@@ -264,17 +288,6 @@ export const DraggableBox = ({
         </div>
       ) : (
         <>
-          {/* <Rnd
-            style={style2}
-            default={{
-              x: 0,
-              y: 0,
-              width: 100,
-              height: 100,
-            }}
-          >
-            Rnd
-          </Rnd> */}
           <div
             ref={drag}
             role="DraggableBox"
